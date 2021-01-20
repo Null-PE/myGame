@@ -26,96 +26,97 @@ block_size = 50
 
 
 # 色を付ける　頭は赤　身体は紫
-def snake(snake_list, lead_x, lead_y):
-    for XnY in snake_list:
+def snake(body, head):
+    for XnY in body:
         pygame.draw.rect(win, PURPLE, [
             XnY[0], XnY[1], block_size, block_size])
         pygame.draw.rect(win, RED, [
-            lead_x, lead_y, block_size, block_size])
+            head[0], head[1], block_size, block_size])
+
+
+def generate_block():
+    x = round(random.randrange(
+        0, display_width - block_size)/block_size)*block_size
+    y = round(random.randrange(
+        0, display_height - block_size)/block_size)*block_size
+    return [x, y]
 
 
 def main():
     exit_game = False
-    over = False
+    game_over = False
 
-    lead_x = display_width/2
-    lead_y = display_height/2
-    lead_x_change = 0
-    lead_y_change = 0
+    head_x = display_width/2
+    head_y = display_height/2
+    x_update = 0
+    y_update = 0
 
     body = []
     snake_length = 1
-
-    target_x = round(random.randrange(
-        0, display_width - block_size)/block_size)*block_size
-    target_y = round(random.randrange(
-        0, display_height - block_size)/block_size)*block_size
+    target = generate_block()
 
     while not exit_game:
         # ゲーム終了後の処理
-        while over:
+        while game_over:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_c:
                         main()
                     if event.key == pygame.K_q:
                         exit_game = True
-                        over = False
+                        game_over = False
                 elif event.type == pygame.QUIT:
                     exit_game = True
-                    over = False
+                    game_over = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit_game = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    lead_x_change = -block_size
-                    lead_y_change = 0
+                    x_update = -block_size
+                    y_update = 0
                 elif event.key == pygame.K_RIGHT:
-                    lead_x_change = block_size
-                    lead_y_change = 0
+                    x_update = block_size
+                    y_update = 0
                 elif event.key == pygame.K_DOWN:
-                    lead_y_change = block_size
-                    lead_x_change = 0
+                    y_update = block_size
+                    x_update = 0
                 elif event.key == pygame.K_UP:
-                    lead_y_change = -block_size
-                    lead_x_change = 0
+                    y_update = -block_size
+                    x_update = 0
 
-        if lead_x >= display_width or lead_x < 0 or lead_y >= display_height or lead_y < 0:
-            over = True
+        # 頭が壁と接触するとゲーム終了
+        if head_x >= display_width or head_x < 0 or head_y >= display_height or head_y < 0:
+            game_over = True
 
-        lead_x += lead_x_change
-        lead_y += lead_y_change
-        win.fill(WHITE)
-        pygame.draw.rect(win, BLACK, [
-                         target_x, target_y, block_size, block_size])
+        head_x += x_update
+        head_y += y_update
 
-        head = [lead_x, lead_y]
+        head = [head_x, head_y]
         body.append(head)
-
         if len(body) > snake_length:
             del body[0]
 
+        win.fill(WHITE)
+        pygame.draw.rect(win, BLACK, [
+            target[0], target[1], block_size, block_size])
+
         # 頭が身体と接触するとゲーム終了
-        for eachSegment in body[:-1]:
-            if eachSegment == head:
-                over = True
+        for block in body[:-1]:
+            if block == head:
+                game_over = True
 
         # 身体の色更新
-        snake(body, lead_x, lead_y)
+        snake(body, head)
 
-        #
-        # if lead_x == target_x and lead_y == target_y:
-        if head == [target_x, target_y]:
-            target_x = round(random.randrange(
-                0, display_width - block_size)/block_size)*block_size
-            target_y = round(random.randrange(
-                0, display_height - block_size)/block_size)*block_size
+        # 長くなる　同時　新しいブロックを生成
+        if head == target:
             snake_length += 1
+            target = generate_block()
 
+        # ゲームを進む
         pygame.display.update()
-
         clock.tick(speed)
     # ゲーム終了
     pygame.quit()
