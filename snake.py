@@ -45,6 +45,7 @@ def generate_block():
 def main():
     exit_game = False
     game_over = False
+    pause = False
 
     head_x = display_width/2
     head_y = display_height/2
@@ -69,6 +70,19 @@ def main():
                     exit_game = True
                     game_over = False
 
+        while pause:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        pause = False
+                    if event.key == pygame.K_q:
+                        exit_game = True
+                        game_over = False
+                elif event.type == pygame.QUIT:
+                    exit_game = True
+                    game_over = False
+                    pause = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit_game = True
@@ -85,6 +99,8 @@ def main():
                 elif event.key == pygame.K_UP:
                     y_update = -block_size
                     x_update = 0
+                elif event.key == pygame.K_SPACE:
+                    pause = True
 
         # 頭が壁と接触するとゲーム終了
         if head_x >= display_width or head_x < 0 or head_y >= display_height or head_y < 0:
